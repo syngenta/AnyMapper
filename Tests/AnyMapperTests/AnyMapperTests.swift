@@ -164,6 +164,7 @@ final class AnyMapperTests: XCTestCase {
         let mapper: AnyMapper = Mapper(source: ["date": "2020-06-12"])
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
+        formatter.timeZone = .none
 
         do {
             // try to map Int "date": "2020-06-12" to Date type. Should be success
@@ -181,6 +182,7 @@ final class AnyMapperTests: XCTestCase {
     func testStringDateError() {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
+        formatter.timeZone = .none
 
         do {
             // try to map Int "date": 20 to Date type.
@@ -229,6 +231,7 @@ final class AnyMapperTests: XCTestCase {
         let mapper: AnyMapper = Mapper(source: ["date": "2020-06-12"])
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = .withFullDate
+        formatter.timeZone = .none
 
         do {
             // try to map Int "date": "2020-06-12" to Date type. Should be success
@@ -245,6 +248,7 @@ final class AnyMapperTests: XCTestCase {
 
     func teststringISO8601DateError() {
         let formatter = ISO8601DateFormatter()
+        formatter.timeZone = .none
         formatter.formatOptions = .withFullDate
 
         do {
