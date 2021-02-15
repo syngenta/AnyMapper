@@ -164,18 +164,17 @@ final class AnyMapperTests: XCTestCase {
         let mapper: AnyMapper = Mapper(source: ["date": "2020-06-12"])
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
-        formatter.timeZone = .none
 
         do {
             // try to map Int "date": "2020-06-12" to Date type. Should be success
             let date: Date = try mapper.value(key: "date", transformer: .stringDate(formatter: formatter))
-            XCTAssertEqual(date.timeIntervalSince1970, 1591909200)
+            XCTAssertEqual(date, formatter.date(from: "2020-06-12"))
         } catch { XCTFail("error - \(error)") }
 
         do {
             // try to map Int "date": "2020-06-12" to Date type. Should be success
             let date: Date? = try mapper.value(key: "date", transformer: .stringDate(formatter: formatter))
-            XCTAssertEqual(date?.timeIntervalSince1970, 1591909200)
+            XCTAssertEqual(date, formatter.date(from: "2020-06-12"))
         } catch { XCTFail("error - \(error)") }
     }
 
@@ -231,18 +230,17 @@ final class AnyMapperTests: XCTestCase {
         let mapper: AnyMapper = Mapper(source: ["date": "2020-06-12"])
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = .withFullDate
-        formatter.timeZone = .none
 
         do {
             // try to map Int "date": "2020-06-12" to Date type. Should be success
             let date: Date = try mapper.value(key: "date", transformer: .stringISO8601Date(formatter: formatter))
-            XCTAssertEqual(date.timeIntervalSince1970, 1591920000)
+            XCTAssertEqual(date, formatter.date(from: "2020-06-12"))
         } catch { XCTFail("error - \(error)") }
 
         do {
             // try to map Int "date": "2020-06-12" to Date type. Should be success
             let date: Date? = try mapper.value(key: "date", transformer: .stringISO8601Date(formatter: formatter))
-            XCTAssertEqual(date?.timeIntervalSince1970, 1591920000)
+            XCTAssertEqual(date, formatter.date(from: "2020-06-12"))
         } catch { XCTFail("error - \(error)") }
     }
 
