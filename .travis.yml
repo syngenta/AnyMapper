@@ -1,0 +1,7 @@
+osx_image: xcode11.3
+language: swift
+script:
+  - swift package generate-xcodeproj
+  - set -o pipefail && xcodebuild test -enableCodeCoverage YES -scheme AnyMapper-Package ONLY_ACTIVE_ARCH=YES | xcpretty
+after_success:
+  - bash <(curl -s https://codecov.io/bash) -t c077da11-887e-4087-a9db-0b4296a95c04
