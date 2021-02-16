@@ -14,10 +14,6 @@ public protocol AnyMappable {
 public extension AnyMappable {
 
     init(source: AnyMapperSource) throws {
-        do {
-            try self.init(mapper: Mapper(source: source))
-        } catch let error {
-            throw error
-        }
+        try self.init(mapper: Mapper(source: source))
     }
 }

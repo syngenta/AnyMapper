@@ -13,6 +13,6 @@ public enum AnyMapperTransformer<T> {
     case replace(() throws -> T)
     case stringInt
     case stringDate(formatter: DateFormatter)
-    @available(iOS 10.0, *) @available(OSX 10.12, *)
+    @available(iOS 10.0, *) @available(OSX 10.12, *) @available(tvOS 10.0, *) @available(watchOS 3.0, *)
     case stringISO8601Date(formatter: ISO8601DateFormatter)
 }
