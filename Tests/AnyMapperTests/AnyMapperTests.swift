@@ -168,19 +168,20 @@ final class AnyMapperTests: XCTestCase {
         do {
             // try to map Int "date": "2020-06-12" to Date type. Should be success
             let date: Date = try mapper.value(key: "date", transformer: .stringDate(formatter: formatter))
-            XCTAssertEqual(date.timeIntervalSince1970, 1591909200)
+            XCTAssertEqual(date, formatter.date(from: "2020-06-12"))
         } catch { XCTFail("error - \(error)") }
 
         do {
             // try to map Int "date": "2020-06-12" to Date type. Should be success
             let date: Date? = try mapper.value(key: "date", transformer: .stringDate(formatter: formatter))
-            XCTAssertEqual(date?.timeIntervalSince1970, 1591909200)
+            XCTAssertEqual(date, formatter.date(from: "2020-06-12"))
         } catch { XCTFail("error - \(error)") }
     }
 
     func testStringDateError() {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
+        formatter.timeZone = .none
 
         do {
             // try to map Int "date": 20 to Date type.
@@ -233,18 +234,19 @@ final class AnyMapperTests: XCTestCase {
         do {
             // try to map Int "date": "2020-06-12" to Date type. Should be success
             let date: Date = try mapper.value(key: "date", transformer: .stringISO8601Date(formatter: formatter))
-            XCTAssertEqual(date.timeIntervalSince1970, 1591920000)
+            XCTAssertEqual(date, formatter.date(from: "2020-06-12"))
         } catch { XCTFail("error - \(error)") }
 
         do {
             // try to map Int "date": "2020-06-12" to Date type. Should be success
             let date: Date? = try mapper.value(key: "date", transformer: .stringISO8601Date(formatter: formatter))
-            XCTAssertEqual(date?.timeIntervalSince1970, 1591920000)
+            XCTAssertEqual(date, formatter.date(from: "2020-06-12"))
         } catch { XCTFail("error - \(error)") }
     }
 
     func teststringISO8601DateError() {
         let formatter = ISO8601DateFormatter()
+        formatter.timeZone = .none
         formatter.formatOptions = .withFullDate
 
         do {
