@@ -390,6 +390,70 @@ final class AnyMapperTests: XCTestCase {
         }
     }
 
+    func testAnyMappableSubdata() {
+
+        struct User: AnyMappableSubdata {
+            let id: Int
+            let name: String
+            let age: Int
+
+            init(mapper: AnyMapper, subdata: AnyMapperSubdata) throws {
+                self.id = try mapper.value(key: "id")
+                self.name = try mapper.value(key: "name")
+                self.age = try subdata.value(key: "age")
+            }
+        }
+
+        do {
+            let subdata = MapperSubdata()
+            subdata.set(key: "age", value: 27)
+            let user = try User(source: ["id": 1, "name": "John"], subdata: subdata)
+            XCTAssertEqual(user.id, 1)
+            XCTAssertEqual(user.name, "John")
+            XCTAssertEqual(user.age, 27)
+        } catch {
+            XCTFail("error - \(error)")
+        }
+
+        do {
+            let user = try User(source: ["id": 1, "name": nil])
+            XCTFail("Must throw - \(user)")
+
+        } catch {
+            if case let .incorrectType(key, _, _) = error as? AnyMapperError {
+                XCTAssertEqual(key, "name")
+            } else {
+                XCTFail("error - \(error)")
+            }
+        }
+
+        do {
+            let source = NSMutableDictionary()
+            source["id"] = 2
+            source["name"] = "Sem"
+            let subdata = MapperSubdata()
+            subdata.set(key: "age", value: 32)
+
+            let user = try User(source: source, subdata: subdata)
+            XCTAssertEqual(user.id, 2)
+            XCTAssertEqual(user.name, "Sem")
+            XCTAssertEqual(user.age, 32)
+        } catch {
+            XCTFail("error - \(error)")
+        }
+
+        do {
+            let user = try User(source: ["id": 1, "name": "John"])
+            XCTFail("Must throw - \(user)")
+        } catch {
+            if case let .noKey(key, _) = error as? AnyMapperError {
+                XCTAssertEqual(key, "age")
+            } else {
+                XCTFail("error - \(error)")
+            }
+        }
+    }
+
     static var allTests = [
         ("testSimpleMap", testSimpleMap),
         ("testNull", testNull),
