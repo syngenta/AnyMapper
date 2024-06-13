@@ -8,7 +8,7 @@
 import Foundation
 
 struct Mapper: AnyMapper {
-    
+
     let source: AnyMapperSource
 
     func value<T>(key: String,
@@ -41,6 +41,78 @@ struct Mapper: AnyMapper {
             throw AnyMapperError.noKey(key: key, mapper: self)
         }
         return try decode(value: value, key: key, transformer: transformer)
+    }
+
+    func value<T>(keyPath: String,
+                  transformer: AnyMapperTransformer<T?>,
+                  options: AnyMapperOptions,
+                  type: T?.Type) throws -> T? {
+
+        guard keyPath.contains(".") else {
+            return try value(
+                key: keyPath,
+                transformer: transformer,
+                options: options,
+                type: type
+            )
+        }
+
+        let keys = keyPath.split(separator: ".")
+        let value = try keys.reduce(source as Any?) { source, key in
+            let key = String(key)
+            guard let source = source as? AnyMapperSource else {
+                guard options.contains(.returnNilIfCantMap) else {
+                    throw AnyMapperError.incorrectType(key: keyPath, mapper: self, type: "AnyMapperSource")
+                }
+                return nil
+            }
+            return source.mapperSourceValue(for: key)
+        }
+
+        guard let value = value else {
+            if case let .replace(callBack) = transformer {
+                return try callBack()
+            } else if options.contains(.returnNilIfNoKey) {
+                return nil
+            }
+            throw AnyMapperError.noKey(key: keyPath, mapper: self)
+        }
+        do {
+            return try decode(value: value, key: keyPath, transformer: transformer)
+        } catch {
+            guard options.contains(.returnNilIfCantMap) else { throw error }
+            return nil
+        }
+    }
+
+    func value<T>(keyPath: String,
+                  transformer: AnyMapperTransformer<T>,
+                  options: AnyMapperOptions,
+                  type: T.Type) throws -> T {
+
+        guard keyPath.contains(".") else {
+            return try value(
+                key: keyPath,
+                transformer: transformer,
+                options: options,
+                type: type
+            )
+        }
+
+        let keys = keyPath.split(separator: ".")
+        let value = try keys.reduce(source as Any) { source, key in
+            let key = String(key)
+            guard let source = source as? AnyMapperSource else {
+                throw AnyMapperError.incorrectType(key: keyPath, mapper: self, type: "AnyMapperSource")
+            }
+            if let value = source.mapperSourceValue(for: key) {
+                return value
+            } else {
+                throw AnyMapperError.noKey(key: keyPath, mapper: self)
+            }
+        }
+
+        return try decode(value: value, key: keyPath, transformer: transformer)
     }
 }
 

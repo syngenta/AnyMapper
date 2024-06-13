@@ -390,6 +390,170 @@ final class AnyMapperTests: XCTestCase {
         }
     }
 
+    func testAnyMapperKeyPath() {
+        let dictionary: [String: Any] = [
+            "user": [
+                "id": 1,
+                "name": "John",
+                "profile": [
+                    "age": 25
+                ],
+                "friends_id": [2, 3, 4],
+            ],
+            "company": "Syngenta"
+        ]
+
+        let mapper: AnyMapper = Mapper(source: dictionary)
+
+        do {
+            let company: String = try mapper.value(keyPath: "company")
+            XCTAssertEqual(company, "Syngenta")
+        } catch { XCTFail("error - \(error)") }
+
+        do {
+            let id: Int = try mapper.value(keyPath: "user.id")
+            XCTAssertEqual(id, 1)
+        } catch { XCTFail("error - \(error)") }
+
+        do {
+            let name: String = try mapper.value(keyPath: "user.name")
+            XCTAssertEqual(name, "John")
+        } catch { XCTFail("error - \(error)") }
+
+        do {
+            let age: Int = try mapper.value(keyPath: "user.profile.age")
+            XCTAssertEqual(age, 25)
+        } catch { XCTFail("error - \(error)") }
+
+        do {
+            let profile: [String: Int] = try mapper.value(keyPath: "user.profile")
+            XCTAssertEqual(profile, ["age": 25])
+        } catch { XCTFail("error - \(error)") }
+
+        do {
+            let unexist: Any = try mapper.value(keyPath: "user.profile.unexist")
+            XCTFail("unexist - \(unexist)")
+        } catch let error as AnyMapperError {
+            XCTAssertEqual(
+                String(describing: error),
+                String(describing: AnyMapperError.noKey(key: "user.profile.unexist", mapper: mapper))
+            )
+        } catch { XCTFail("error - \(error)") }
+
+        do {
+            let unexist: String = try mapper.value(keyPath: "user.friends_id.unexist")
+            XCTFail("unexist - \(unexist)")
+        } catch let error as AnyMapperError {
+            XCTAssertEqual(
+                String(describing: error),
+                String(describing: AnyMapperError.incorrectType(
+                    key: "user.friends_id.unexist",
+                    mapper: mapper,
+                    type: "AnyMapperSource"
+                ))
+            )
+        } catch { XCTFail("error - \(error)") }
+    }
+
+    func testAnyMapperKeyPathOptional() {
+        let dictionary: [String: Any] = [
+            "user": [
+                "id": 1,
+                "name": nil,
+                "profile": [
+                    "age": nil
+                ],
+                "friends_id": [2, 3, 4],
+            ],
+            "company": "Syngenta"
+        ]
+
+        let mapper: AnyMapper = Mapper(source: dictionary)
+
+        do {
+            let company: String? = try mapper.value(keyPath: "company")
+            XCTAssertEqual(company, "Syngenta")
+        } catch { XCTFail("error - \(error)") }
+
+        do {
+            let id: String? = try mapper.value(keyPath: "user.id")
+            XCTAssertEqual(id, nil)
+        } catch { XCTFail("error - \(error)") }
+
+        do {
+            let name: String? = try mapper.value(keyPath: "user.name")
+            XCTAssertEqual(name, nil)
+        } catch { XCTFail("error - \(error)") }
+
+        do {
+            let age: Int? = try mapper.value(keyPath: "user.profile.age")
+            XCTAssertEqual(age, nil)
+        } catch { XCTFail("error - \(error)") }
+
+        do {
+            let profile: [String: Int?] = try mapper.value(keyPath: "user.profile")
+            XCTAssertEqual(profile, ["age": nil])
+        } catch { XCTFail("error - \(error)") }
+
+        do {
+            let unexist: String? = try mapper.value(keyPath: "user.profile.unexist")
+            XCTAssertEqual(unexist, nil)
+        } catch { XCTFail("error - \(error)") }
+
+        do {
+            let unexist: String? = try mapper.value(keyPath: "user.profile.unexist", transformer: .replace { "" })
+            XCTAssertEqual(unexist, "")
+        } catch { XCTFail("error - \(error)") }
+
+        do {
+            let unexist: String? = try mapper.value(keyPath: "user.profile.unexist", options: .none)
+            XCTFail("unexist - \(String(describing: unexist))")
+        } catch let error as AnyMapperError {
+            XCTAssertEqual(
+                String(describing: error),
+                String(describing: AnyMapperError.noKey(key: "user.profile.unexist", mapper: mapper))
+            )
+        } catch { XCTFail("error - \(error)") }
+
+        do {
+            let unexist: String? = try mapper.value(keyPath: "user.friends_id.unexist")
+            XCTAssertEqual(unexist, nil)
+        } catch { XCTFail("error - \(error)") }
+
+        do {
+            let unexist: String? = try mapper.value(keyPath: "user.friends_id.unexist", options: .none)
+            XCTFail("unexist - \(String(describing: unexist))")
+        } catch let error as AnyMapperError {
+            XCTAssertEqual(
+                String(describing: error),
+                String(describing: AnyMapperError.incorrectType(
+                    key: "user.friends_id.unexist",
+                    mapper: mapper,
+                    type: "AnyMapperSource"
+                ))
+            )
+        } catch { XCTFail("error - \(error)") }
+
+        do {
+            let id: String? = try mapper.value(keyPath: "user.id")
+            XCTAssertEqual(id, nil)
+        } catch { XCTFail("error - \(error)") }
+
+        do {
+            let id: String? = try mapper.value(keyPath: "user.id", options: .none)
+            XCTFail("id - \(String(describing: id))")
+        } catch let error as AnyMapperError {
+            XCTAssertEqual(
+                String(describing: error),
+                String(describing: AnyMapperError.incorrectType(
+                    key: "user.id",
+                    mapper: mapper,
+                    type: "Optional<String>"
+                ))
+            )
+        } catch { XCTFail("error - \(error)") }
+    }
+
     static var allTests = [
         ("testSimpleMap", testSimpleMap),
         ("testNull", testNull),
@@ -403,5 +567,7 @@ final class AnyMapperTests: XCTestCase {
         ("testReplace", testReplace),
         ("testTransform", testTransform),
         ("testAnyMappable", testAnyMappable),
+        ("testAnyMapperKeyPath", testAnyMapperKeyPath),
+        ("testAnyMapperKeyPathOptional", testAnyMapperKeyPathOptional)
     ]
 }
